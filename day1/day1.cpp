@@ -9,30 +9,37 @@ int main(){
     fstream file;
     long sum = 0;
 
+    //Get filename, open file
     cout << "Please input filename: ";
     cin >> filename;
     
     file.open(filename,ios::in);
 
     if(file.is_open()){
+
+        //Read line by line through file
         string line;
         while(getline(file,line)){
 
-            int firstnum = -1;
-            int lastnum = -1;
+            int firstNum = -1;
+            int lastNum = -1;
             int length = line.length();
 
+            //Check for digit(s) in line
             for(int i = 0; i < length; i++){
                 if(isdigit(line[i])){
-                    if(firstnum == -1){
-                        firstnum = line[i] - '0';
+                    if(firstNum == -1){
+                        firstNum = line[i] - '0';
                     }
-                    lastnum = line[i] - '0';
+                    lastNum = line[i] - '0';
                 }
             }
-            //cout << firstnum << lastnum << endl;
-            if(firstnum != -1){
-                sum += (firstnum * 10) + lastnum;
+
+            //cout << firstNum << lastNum << endl;
+
+            //Add 2-digit number made of first number and last number to final sum
+            if(firstNum != -1){
+                sum += (firstNum * 10) + lastNum;
             }
         }
     }
