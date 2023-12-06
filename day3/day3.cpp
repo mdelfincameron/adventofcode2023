@@ -3,77 +3,71 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <regex>
 
 using namespace std;
 
-bool checkForSymbol(vector<vector<char>> arr, int i, int j){
-    if(i >= 0 && i < arr.size() && j >= 0 && j < arr[i].size()){
-        return !isdigit(arr[i][j]) && (arr[i][j] != '.');
-    }
-    return false;
-}
-
-bool checkAdjacent(vector<vector<char>> arr, int i, int j){
-    return checkForSymbol(arr, i - 1, j) || checkForSymbol(arr, i - 1, j + 1)
-        || checkForSymbol(arr, i, j + 1) || checkForSymbol(arr, i + 1, j + 1)
-        || checkForSymbol(arr, i + 1, j) || checkForSymbol(arr, i + 1, j - 1)
-        || checkForSymbol(arr, i, j - 1) || checkForSymbol(arr, i - 1, j - 1);
-}
-
 int main(){
-    auto start = chrono::steady_clock::now();
     string filename;
     fstream file;
     long sum = 0;
-    vector<vector<char>> schematic;
+    vector<string> schematic;
+    regex num("\\d+");
 
     //Get filename, open file
     cout << "Please input filename: ";
     cin >> filename;
     
+    auto start = chrono::steady_clock::now();
     file.open(filename,ios::in);
 
     if(file.is_open()){
 
-        //Read line by line through file and add all chars to schematic 2D vector
+        //Read line by line through file and add all chars to schematic 2D vector with padding on each side
+
         string line;
+
+        getline(file,line);
+        int length = line.length() + 2;
+        file.seekg(0);
+
+        schematic.push_back(string(length,'.'));
+
         while(getline(file,line)){
-            vector<char> ln;
-            for(int i = 0; i < line.length(); i++){
-                ln.push_back(line[i]);
-            }
-            schematic.push_back(ln);
+            
+            schematic.push_back("." + line + ".");
         }
+
+        schematic.push_back(string(length,'.'));
     }
 
     file.close();
 
-    bool symbolFound = false;
-    int num = 0;
-    for(int i = 0; i < schematic.size(); i++){
-        for(int j = 0; j < schematic[i].size(); j++){
+    for(int i = 1; i < schematic.size() - 1; i++){
 
-            //Check for symbol in all adjacent spots if digit, starting from directly above and going clockwise
-            if(isdigit(schematic[i][j])){
-                if(!symbolFound && checkAdjacent(schematic,i,j)){
-                    symbolFound = true;
+        auto begin = sregex_iterator(schematic[i].begin(),schematic[i].end(),num);
+        auto end = sregex_iterator();
+        smatch m;
+        regex symbol("[^0-9.]+");
+
+        //Check adjacent chars to each regex found in line
+        for(sregex_iterator j = begin; j != end; j++){
+            int start = j->position();
+            int length = j->length();
+
+            vector<string> adjacentChars = {schematic[i - 1].substr(start - 1, length + 2), 
+                                            schematic[i + 1].substr(start - 1, length + 2),
+                                            schematic[i].substr(start - 1, 1),
+                                            schematic[i].substr(start + length, 1)};
+
+            //If there is an adjacent symbol, add to sum
+            for (int k = 0; k < adjacentChars.size(); k++){
+                if(regex_search(adjacentChars[k], m, symbol)){
+                    sum += stoi(j->str());
+                    break;
                 }
-                num = (num * 10) + (schematic[i][j] - '0');
             }
-
-            //Check if last digit of number
-            if(true){
-                if(symbolFound){
-                    sum += num;
-                    symbolFound = false;
-                    //cout << num << endl;
-                }
-                num = 0;
-            }
-
-            //cout << schematic[i][j] << ":" << checkForSymbol(schematic,i,j) << " ";
-        }
-        //cout << endl;
+        } 
     }
     auto end = chrono::steady_clock::now();
 
