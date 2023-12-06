@@ -36,6 +36,7 @@ int main(){
     string filename;
     fstream file;
     long sum = 0;
+    vector<int> matches;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -50,17 +51,10 @@ int main(){
         string line;
         while(getline(file,line)){
 
-            int id = 0;
             int matchCount = 0;
 
             //Split along colon
             vector<string> splitLine = split(line,":");
-
-            //Get number of card
-            smatch m;
-            regex digits = regex("\\d+");
-            regex_search(splitLine[0],m,digits);
-            id = stoi(m.str());
 
             //Split along pipe symbol
             vector<string> splitNums = split(splitLine[1],"|");
@@ -82,17 +76,32 @@ int main(){
             cout << endl;
             */
 
-           //Find how many matches there are in winning number vector, add appropriate amount to sum
+           //Find how many matches there are in winning number vector, push to vector
             for(auto i : haveNums){
                 if(find(winningNums.begin(), winningNums.end(), i) != winningNums.end()){
                     matchCount++;
                 }
             }
-            cout << id << " " << matchCount << endl;
 
-            sum += pow(2, matchCount - 1);
+            matches.push_back(matchCount);
+            
         }
     }
+
+    //Add copies of each card, then add to sum afterwards
+    vector<int> cards(matches.size(), 1);
+    for(size_t i = 0; i < cards.size(); i++){
+        int match = matches[i];
+        for(size_t j = i + 1; j < min(i + 1 + match, cards.size()); j++){
+            cards[j] += cards[i];
+        }
+    }
+
+    for(auto i : cards){
+        //cout << i << " ";
+        sum += i;
+    }   
+    cout << endl;
 
     file.close();
 
