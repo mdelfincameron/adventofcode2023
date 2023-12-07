@@ -51,20 +51,23 @@ int main(){
 
     if(file.is_open()){
 
-        //Read line by line through file
+        //Read first line
         string line;
+        smatch m;
+
         getline(file,line);
+
         //Split along colon
         vector<string> seeds = split(line,":");
         splitSeeds = convertToLongLong(split(seeds[1], " "));
-        smatch m;
         
+        //Read until map is reached, then add vector of (dest,source,range) sets to overall set
         while(getline(file,line)){
 
             if(regex_search(line, m, colon)){
                 vector<vector<long long>> m;
                 while(getline(file,line)){
-                    if(line == ""){
+                    if(line.empty()){
                         break;
                     }
 
@@ -81,6 +84,7 @@ int main(){
 
     file.close();
     
+    //Iterate through seeds, get matching locations, and check if current location is the minimum location
     for(auto location : splitSeeds){
         //cout << location << endl;
         for(auto i : vecs){
