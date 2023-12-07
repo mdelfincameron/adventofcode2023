@@ -22,23 +22,23 @@ vector<string> split(string str, string delimiter){
     return res;
 }
 
-vector<int> convertToInt(vector<string> v){
-    vector<int> res;
+long long convertToLongLong(vector<string> v){
+    string res = "";
     for(auto i : v){
         if(i != ""){
-            res.push_back(stoi(i));
+            res += i;
         }
     }
-    return res;
+    return stoll(res);
 }
 
 int main(){
     string filename;
     fstream file;
     long long total = 0;
-    vector<int> winCounts;
-    vector<int> times;
-    vector<int> distances;
+    vector<long long> winCounts;
+    vector<long long> times;
+    vector<long long> distances;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -57,22 +57,22 @@ int main(){
     //Get list of times
     getline(file,line);
     vector<string> splitLine = split(line,":");
-    times = convertToInt(split(splitLine[1]," "));
+    times.push_back(convertToLongLong(split(splitLine[1]," ")));
 
     //Get list of distances
     getline(file,line);
     splitLine = split(line,":");
-    distances = convertToInt(split(splitLine[1]," "));
+    distances.push_back(convertToLongLong(split(splitLine[1]," ")));
 
     //Check each time and distance for possible wins
     for(int i = 0; i < times.size(); i++){
 
-        int minTime, maxTime;
-        int timeAllowed = times[i];
-        int record = distances[i];
+        long long minTime, maxTime;
+        long long timeAllowed = times[i];
+        long long record = distances[i];
 
         //Find minimum possible time needed to win
-        for(int j = 1; j < timeAllowed; j++){
+        for(long long j = 1; j < timeAllowed; j++){
             if(j * (timeAllowed - j) > record){
                 minTime = j;
                 break;
@@ -80,7 +80,7 @@ int main(){
         }
 
         //Find maximum possible time to win
-        for(int j = timeAllowed - 1; j > 0; j--){
+        for(long long j = timeAllowed - 1; j > 0; j--){
             if(j * (timeAllowed - j) > record){
                 maxTime = j;
                 break;
