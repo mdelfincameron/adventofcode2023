@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//Extracts node strings from line
 vector<string> getNode(string str){
 
     vector<string> res;
@@ -45,27 +46,32 @@ int main(){
 
     string line;
 
+    //Get line of instructions to be repeated
     getline(file,line);
     instructions = line;
+
+    //Skip empty line
     getline(file,line);
 
+    //Read in lines, insert node into map
     while(getline(file,line)){
 
         vector<string> node = getNode(line);
         nodes.insert({node[0], {node[1], node[2]}});
-        if(cur == ""){
-            cur = node[0];
-        }
         
     }
     
     file.close();
 
+    //Find final node
     while(cur != "ZZZ"){
+
+        //Get current instruction
         char instruction = instructions[i];
-        pair<string,string> dests = (nodes.find(cur))->second;
         string next;
 
+        //Get next destination
+        pair<string,string> dests = (nodes.find(cur))->second;
         if(instruction == 'L'){
             next = dests.first;
         }
@@ -73,6 +79,7 @@ int main(){
             next = dests.second;
         }
 
+        //Check if instructions string needs to be reset
         if(i == instructions.length() - 1){
             i = 0;
         }

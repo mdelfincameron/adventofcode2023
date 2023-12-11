@@ -8,6 +8,7 @@
 
 using namespace std;
 
+//Enum hand types as ints for easier reference
 enum handTypes{
     highCard,
     onePair,
@@ -18,6 +19,7 @@ enum handTypes{
     fiveOfAKind
 };
 
+//Returns int based on char, order is 23456789TJQKA
 int cardToInt(char c){
     switch(c){
         case('T'):
@@ -52,6 +54,7 @@ Card::Card(string str, int bid){
     vector<int> cards(14,0);
     cardCounts = cards;
 
+    //Get counts of each type of card within hand
     for(int i = 0; i < str.length(); i++){
         cardCounts[cardToInt(str[i]) - 1]++;
     }
@@ -62,8 +65,7 @@ void Card::parse(){
     bool threeExists = false;
     int pairCount = 0;
 
-    
-
+    //Check for easy to deduce hand types, set flags for others
     for(auto i : cardCounts){
         switch(i){
             case 5:
@@ -88,6 +90,7 @@ void Card::parse(){
         }
     }
 
+    //Check remaining hand types based on flags
     if(handType == -1){
         if(threeExists){
             handType = threeOfAKind;
@@ -104,6 +107,7 @@ void Card::parse(){
     }
 }
 
+//Compare function for two cards, checks hand type and then compares characters
 bool cardCompare(Card a, Card b){
     if(a.handType != b.handType){
         return a.handType < b.handType;
@@ -164,8 +168,10 @@ int main(){
     
     file.close();
 
+    //Sort card vector with compare function
     sort(cards.begin(), cards.end(), cardCompare);
 
+    //Add to total winnings based on rankings
     for(int i = 0; i < cards.size(); i++){
         //cout << cards[i].bid << "->" << cards[i].bid * (i + 1) << endl;
         total += cards[i].bid * (i + 1);

@@ -8,6 +8,7 @@
 
 using namespace std;
 
+//Enum hand types as ints for easier reference
 enum handTypes{
     highCard,
     onePair,
@@ -18,6 +19,7 @@ enum handTypes{
     fiveOfAKind
 };
 
+//Returns int based on char, order is J23456789TQKA
 int cardToInt(char c){
     switch(c){
         case('T'):
@@ -53,14 +55,9 @@ Card::Card(string str, int bid){
     vector<int> cards(14,0);
     cardCounts = cards;
 
+    //Get counts of each type of card within hand
     for(int i = 0; i < str.length(); i++){
         cardCounts[cardToInt(str[i]) - 1]++;
-    }
-}
-
-void Card::updateHandType(handTypes h){
-    if(h > handType){
-        handType = h;
     }
 }
 
@@ -70,23 +67,24 @@ void Card::parse(){
     int pairCount = 0;
     int jokerCount = cardCounts[0];
 
+    //Check for easy to deduce hand types not accounting for jokers, set flags for others
     for(int i = 1; i < cardCounts.size(); i++){
         switch(cardCounts[i]){
             case 5:
-                updateHandType(fiveOfAKind);
+                handType = fiveOfAKind;
                 break;
             case 4:
-                updateHandType(fourOfAKind);
+                handType = fourOfAKind;
                 break;
             case 3:
                 if(twoExists){
-                    updateHandType(fullHouse);
+                    handType = fullHouse;
                 }
                 threeExists = true;
                 break;
             case 2:
                 if(threeExists){
-                    updateHandType(fullHouse);
+                    handType = fullHouse;
                 }
                 pairCount++;
                 twoExists = true;
@@ -94,42 +92,45 @@ void Card::parse(){
         }
     }
 
+    //Check remaining hand types based on flags
     if(handType == -1){
         if(threeExists){
-            updateHandType(threeOfAKind);
+            handType = threeOfAKind;
         }
         else if(pairCount == 2){
-            updateHandType(twoPair);
+            handType = twoPair;
         }
         else if(pairCount == 1){
-            updateHandType(onePair);
+            handType = onePair;
         }
         else{
-            updateHandType(highCard);
+            handType = highCard;
         }
     }
 
+    //Update hand type based on how many jokers were in the hand
     while(jokerCount > 0){
         if(handType == fourOfAKind){
-            updateHandType(fiveOfAKind);
+            handType = fiveOfAKind;
         }
         else if(handType == threeOfAKind){
-            updateHandType(fourOfAKind);
+            handType = fourOfAKind;
         }
         else if(handType == onePair){
-            updateHandType(threeOfAKind);
+            handType = threeOfAKind;
         }
         else if(handType == highCard){
-            updateHandType(onePair);
+            handType = onePair;
         }
         else if(handType == twoPair){
-            updateHandType(fullHouse);
+            handType = fullHouse;
         }
         jokerCount--;
     }
     
 }
 
+//Compare function for two cards, checks hand type and then compares characters
 bool cardCompare(Card a, Card b){
     if(a.handType != b.handType){
         return a.handType < b.handType;
@@ -190,8 +191,10 @@ int main(){
     
     file.close();
 
+    //Sort card vector with compare function
     sort(cards.begin(), cards.end(), cardCompare);
 
+    //Add to total winnings based on rankings
     for(int i = 0; i < cards.size(); i++){
         //cout << cards[i].bid << "->" << cards[i].bid * (i + 1) << endl;
         total += cards[i].bid * (i + 1);
