@@ -31,10 +31,12 @@ long long extrapolateHistory(vector<long long> v){
         vector<long long> check = diffs[diffs.size() - 1];
         vector<long long> diff;
 
+        //Construct next line by taking differences
         for(int i = 1; i < check.size(); i++){
             diff.push_back(check[i] - check[i - 1]);
         }
 
+        //Check if next line is all zeroes
         for(int i = 0; i < diff.size(); i++){
             if(diff[i] != 0){
                 break;
@@ -43,6 +45,7 @@ long long extrapolateHistory(vector<long long> v){
                 allZeroes = true;
             }
         }
+
         diffs.push_back(diff);
     }
 

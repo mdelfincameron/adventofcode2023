@@ -15,6 +15,7 @@ int main(){
     long long dist = 0;
     vector<string> tiles;
     queue<vector<int>> check;
+    int lineCount = 0;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -73,7 +74,10 @@ int main(){
         int j = check.front()[1];
         int count = check.front()[2];
 
-        //cout << i << "," << j << "," << count << ":    " << tiles[i][j] << endl;
+        if(tiles[i][j] == '.'){
+            check.pop();
+            continue;
+        }
 
         //Check if each adjacent tile is traversable
         if(tiles[i - 1][j] == '|' || tiles[i - 1][j] == '7' || tiles[i - 1][j] == 'F'){
@@ -100,7 +104,7 @@ int main(){
         if(check.front() == check.back()){
             dist = count;
         }
-        
+        lineCount++;
         check.pop();
     }
 
