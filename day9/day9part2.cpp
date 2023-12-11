@@ -46,6 +46,11 @@ long long extrapolateHistory(vector<long long> v){
         diffs.push_back(diff);
     }
 
+    //Insert zeros at the start of each line to assign extrapolated previous value to
+    for(int i = 0; i < diffs.size(); i++){
+        diffs[i].insert(diffs[i].begin(), 0);
+    }
+
     /*
     for(auto d : diffs){
         for(auto j : d){
@@ -56,9 +61,9 @@ long long extrapolateHistory(vector<long long> v){
     cout << endl;
     */
 
-   //Add extrapolated next value to every line above the one of all zeroes
+   //Add extrapolated previous value to every line above the one of all zeroes
     for(int i = diffs.size() - 2; i >= 0; i--){
-        diffs[i].push_back(diffs[i][diffs[i].size() - 1] + diffs[i + 1][diffs[i + 1].size() - 1]);
+        diffs[i][0] = diffs[i][1] - diffs[i + 1][0];
     }
 
     /*
@@ -70,10 +75,11 @@ long long extrapolateHistory(vector<long long> v){
     }
     cout << endl;
     */
+    
 
-    //cout << diffs[0][diffs[0].size() - 1] << endl << endl;
+    //cout << diffs[0][0] << endl << endl;
 
-    return diffs[0][diffs[0].size() - 1];
+    return diffs[0][0];
 }
 
 int main(){
