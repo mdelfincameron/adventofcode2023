@@ -23,7 +23,7 @@ int cardToInt(char c){
         case('T'):
             return 10;
         case('J'):
-            return 11;
+            return 1;
         case('Q'):
             return 12;
         case('K'):
@@ -42,6 +42,7 @@ class Card{
         int handType = -1;
         vector<int> cardCounts;
         Card(string str, int bid);
+        void updateHandType(handTypes h);
         void parse();
 };
 
@@ -57,30 +58,35 @@ Card::Card(string str, int bid){
     }
 }
 
+void Card::updateHandType(handTypes h){
+    if(h > handType){
+        handType = h;
+    }
+}
+
 void Card::parse(){
     bool twoExists = false;
     bool threeExists = false;
     int pairCount = 0;
+    int jokerCount = cardCounts[0];
 
-    
-
-    for(auto i : cardCounts){
-        switch(i){
+    for(int i = 1; i < cardCounts.size(); i++){
+        switch(cardCounts[i]){
             case 5:
-                handType = fiveOfAKind;
+                updateHandType(fiveOfAKind);
                 break;
             case 4:
-                handType = fourOfAKind;
+                updateHandType(fourOfAKind);
                 break;
             case 3:
                 if(twoExists){
-                    handType = fullHouse;
+                    updateHandType(fullHouse);
                 }
                 threeExists = true;
                 break;
             case 2:
                 if(threeExists){
-                    handType = fullHouse;
+                    updateHandType(fullHouse);
                 }
                 pairCount++;
                 twoExists = true;
@@ -90,18 +96,38 @@ void Card::parse(){
 
     if(handType == -1){
         if(threeExists){
-            handType = threeOfAKind;
+            updateHandType(threeOfAKind);
         }
         else if(pairCount == 2){
-            handType = twoPair;
+            updateHandType(twoPair);
         }
         else if(pairCount == 1){
-            handType = onePair;
+            updateHandType(onePair);
         }
         else{
-            handType = highCard;
+            updateHandType(highCard);
         }
     }
+
+    while(jokerCount > 0){
+        if(handType == fourOfAKind){
+            updateHandType(fiveOfAKind);
+        }
+        else if(handType == threeOfAKind){
+            updateHandType(fourOfAKind);
+        }
+        else if(handType == onePair){
+            updateHandType(threeOfAKind);
+        }
+        else if(handType == highCard){
+            updateHandType(onePair);
+        }
+        else if(handType == twoPair){
+            updateHandType(fullHouse);
+        }
+        jokerCount--;
+    }
+    
 }
 
 bool cardCompare(Card a, Card b){
