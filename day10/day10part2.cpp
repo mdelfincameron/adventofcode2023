@@ -5,8 +5,44 @@
 #include <regex>
 #include <chrono>
 #include <queue>
+#include <set>
 
 using namespace std;
+
+
+bool pointInLoop(pair<int,int> pos, vector<pair<int,int>> loopTiles){
+    cout << endl;
+    cout << pos.first << "," << pos.second << endl;
+    int num = loopTiles.size();
+    int j = num - 1;
+    bool c = false;
+
+    for(int i = 0; i < num; i++){
+        if(pos.second == loopTiles[i].second && pos.first == loopTiles[i].first){
+            cout << "Corner" << endl;
+            return true;
+        }
+        if((loopTiles[i].first > pos.first) != (loopTiles[j].first > pos.first)){
+
+            int slope = (pos.second - loopTiles[i].second) * (loopTiles[j].first - loopTiles[i].first)
+            - (loopTiles[j].second - loopTiles[i].second) * (pos.first - loopTiles[i].first);
+            cout << "Slope: " << slope << endl;
+
+            if(slope == 0){
+                cout << "Boundary" << endl;
+                return true;
+            }
+
+            if((slope < 0) != (loopTiles[j].first < loopTiles[i].first)){
+                cout << "Crossed" << endl;
+                c = !c;
+            }
+        }
+        j = i;
+    }
+
+    return c;
+}
 
 int main(){
     string filename;
@@ -15,7 +51,8 @@ int main(){
     long long dist = 0;
     vector<string> tiles;
     queue<vector<int>> check;
-    int lineCount = 0;
+    long long tileCount = 0;
+    vector<pair<int,int>> loopTiles;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -69,17 +106,18 @@ int main(){
     }
     //cout << endl;
 
-    //Find the furthest point in the loop
     while(!check.empty()){
         int i = check.front()[0];
         int j = check.front()[1];
         int count = check.front()[2];
 
         //Check if tile is already traversed
-        if(tiles[i][j] == '.'){
+        if(tiles[i][j] == '!'){
             check.pop();
             continue;
         }
+
+        loopTiles.push_back({i, j});
 
         //Check if each adjacent tile is traversable
         if(tiles[i - 1][j] == '|' || tiles[i - 1][j] == '7' || tiles[i - 1][j] == 'F'){
@@ -99,20 +137,41 @@ int main(){
             check.push({i, j - 1, count + 1});
         }
         
-        //Change current tile to period so it can't be traversed again
-        tiles[i][j] = '.';
+        //Change current tile to nonspecified char so it can't be traversed again
+        tiles[i][j] = '!';
 
         //Last tile has been found, save final count
         if(check.front() == check.back()){
             dist = count;
         }
-        lineCount++;
+        
         check.pop();
+    }
+
+    sort(loopTiles.begin(), loopTiles.end());
+
+    /*
+    for(auto p : loopTiles){
+        cout << p.first << ", " << p.second << endl;
+    }
+    cout << loopTiles.size() << endl;
+    cout << endl;
+    */
+
+
+    for(int y = 1; y < tiles.size() - 1; y++){
+        for(int x = 1; x < tiles[y].size() - 1; x++){
+            if(tiles[y][x] != '!' && pointInLoop({y, x}, loopTiles)){
+                cout << tiles[y].substr(0, x) << endl;
+                cout << y << ", " << x << endl; 
+                tileCount++;
+            }
+        }
     }
 
     auto end = chrono::steady_clock::now();
 
-    cout << dist << endl;
+    cout << tileCount << endl;
     cout << "Runtime is " << chrono::duration <double, milli> (end - start).count() << " ms" << endl; 
 
     exit(0);
