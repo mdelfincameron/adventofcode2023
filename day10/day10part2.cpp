@@ -158,7 +158,6 @@ int main(){
     cout << endl;
     */
 
-
     for(int y = 1; y < tiles.size() - 1; y++){
         for(int x = 1; x < tiles[y].size() - 1; x++){
             if(tiles[y][x] != '!' && pointInLoop({y, x}, loopTiles)){

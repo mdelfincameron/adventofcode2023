@@ -15,6 +15,8 @@ int main(){
     long long sum = 0;
     vector<string> space;
     vector<pair<int,int>> galaxies;
+    vector<int> emptyRows;
+    vector<int> emptyCols;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -34,19 +36,23 @@ int main(){
     int length = line.length();
     file.seekg(0);
 
-    //Read in lines, if no galaxies are in line, add an extra one
+    //Read in lines
     while(getline(file,line)){
-
-        if(line.find('#') == string::npos){
-            space.push_back(line);
-        }
         space.push_back(line);
-
     }
 
     file.close();
 
-    //Find columns without any galaxies, insert an extra column when found
+    //Find rows without galaxies, push to emptyRows
+    for(int i = 0; i < space.size(); i++){
+        if(space[i].find('#') == string::npos){
+            emptyRows.push_back(i);
+            //cout << i << " ";
+        }
+    }
+    //cout << endl;
+
+    //Find columns without galaxies, push to emptyCols
     for(int j = 0; j < space[0].size(); j++){
         bool noGalaxies = true;
 
@@ -58,13 +64,11 @@ int main(){
         }
 
         if(noGalaxies){
-            //cout << j << endl;
-            for(int i = 0; i < space.size(); i++){
-                space[i].insert(space[i].begin() + j, '.');
-            }
-            j++;
+            //cout << j << " ";
+            emptyCols.push_back(j);
         }
     }
+    //cout << endl;
 
     /*
     for(auto i : space){
@@ -76,7 +80,7 @@ int main(){
     cout << endl;
     */
 
-   //Find position of every galaxy
+   ///Find position of every galaxy
    for(int i = 0; i < space.size(); i++){
         for(int j = 0; j < space[0].size(); j++){
             if(space[i][j] == '#'){
@@ -85,10 +89,33 @@ int main(){
         }
     }
 
-    //Distance = difference in x positions + difference in y positions, add it to sum
+    //Get final sum
     for(int i = 0; i < galaxies.size(); i++){
         for(int j = i + 1; j < galaxies.size(); j++){
-            sum += abs(galaxies[j].first - galaxies[i].first) + abs(galaxies[j].second - galaxies[i].second);
+            //Find distance between galaxies
+            long long dist = abs(galaxies[j].first - galaxies[i].first) + abs(galaxies[j].second - galaxies[i].second);
+
+            int minRow = min(galaxies[j].first, galaxies[i].first);
+            int minCol = min(galaxies[j].second, galaxies[i].second);
+            int maxRow = max(galaxies[j].first, galaxies[i].first);
+            int maxCol = max(galaxies[j].second, galaxies[i].second);
+            //cout << minRow << "->" << maxRow << ", " << minCol << "->" << maxCol << endl;
+
+            //Check empty rows and cols to see if there is one between specified galaxies, add to distance if so
+            for(auto r : emptyRows){
+                if(minRow <= r && r <= maxRow){
+                    //cout << "Row added" << endl;
+                    dist += 999999;
+                }
+            }
+            for(auto c : emptyCols){
+                if(minCol <= c && c <= maxCol){
+                    //cout << "Column added" << endl;
+                    dist += 999999;
+                }
+            }
+            //cout << dist << endl;
+            sum += dist;
         }
     }
 
