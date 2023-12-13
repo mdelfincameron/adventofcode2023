@@ -9,6 +9,35 @@
 
 using namespace std;
 
+struct pos{
+    int x, y;
+};
+
+bool operator==(pos a, pos b){ 
+    return a.x==b.x && a.y==b.y; 
+}
+bool operator!=(pos a, pos b){ 
+    return !(a == b); 
+}
+pos operator+(pos a, pos b){ 
+    return { a.x+b.x, a.y+b.y }; 
+}
+pos& operator+=(pos& a, pos b){ 
+    return a = a + b; 
+}
+
+struct pipeMap{
+    char at(pos p) const { 
+        return grid[p.y*width+p.x]; 
+    }
+    char& at(pos p) { 
+        return grid[p.y*width+p.x]; 
+    }
+
+    std::vector<char> grid;
+    int width;
+    int height;
+};
 
 bool pointInLoop(pair<int,int> pos, vector<pair<int,int>> loopTiles){
     cout << endl;
@@ -150,6 +179,14 @@ int main(){
 
     sort(loopTiles.begin(), loopTiles.end());
 
+    for(auto i : tiles){
+        for(auto j : i){
+            cout << j;
+        }
+        cout << endl;
+    }
+    cout << endl;
+
     /*
     for(auto p : loopTiles){
         cout << p.first << ", " << p.second << endl;
@@ -159,7 +196,7 @@ int main(){
     */
 
     for(int y = 1; y < tiles.size() - 1; y++){
-        for(int x = 1; x < tiles[y].size() - 1; x++){
+        for(int x = 1; x < tiles[0].size() - 1; x++){
             if(tiles[y][x] != '!' && pointInLoop({y, x}, loopTiles)){
                 cout << tiles[y].substr(0, x) << endl;
                 cout << y << ", " << x << endl; 
