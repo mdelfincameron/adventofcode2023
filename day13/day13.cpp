@@ -14,7 +14,6 @@ int main(){
     long long sum = 0;
     vector<vector<string>> terrains;
     vector<pair<char,size_t>> reflections;
-    vector<pair<char,size_t>> smudgeReflections;
 
     //Get filename, open file
     cout << "Please input filename: ";
