@@ -18,7 +18,7 @@ int main(){
     //Get filename, open file
     cout << "Please input filename: ";
     cin >> filename;
-    
+
     auto start = chrono::steady_clock::now();
     file.open(filename,ios::in);
 

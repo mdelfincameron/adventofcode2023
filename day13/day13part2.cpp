@@ -7,13 +7,23 @@
 
 using namespace std;
 
+int checkDiffs(string a, string b){
+    int diffCount = 0;
+    for(int i = 0; i < a.length(); i++){
+        if(a[i] != b[i]){
+            diffCount++;
+        }
+    }
+    return diffCount;
+}
+
 int main(){
     string filename;
     fstream file;
 
     long long sum = 0;
     vector<vector<string>> terrains;
-    vector<pair<char,size_t>> reflections;
+    vector<pair<char,int>> reflections;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -42,6 +52,7 @@ int main(){
 
     }
 
+    //No newline after last terrain, push it into terrains
     terrains.push_back(terrain);
 
     file.close();
@@ -55,20 +66,27 @@ int main(){
     }
     */
 
+    //Locate reflections
     for(auto terrain : terrains){
         bool rowFound = false;
         bool colFound = false;
-        for(size_t row = 0; row < terrain.size() - 1; row++){
+
+        //Find reflection's row if it exists, there can be at most 1 difference in compared rows(the smudge)
+        for(int row = 0; row < terrain.size() - 1; row++){
             //cout << "Rows:" << endl << terrain[row] << endl << terrain[row + 1] << endl << endl;
-            if(terrain[row] == terrain[row + 1]){
-                size_t upper = row;
-                size_t lower = row + 1;
+
+            //If possible row reflection start is found, check each side
+            if(checkDiffs(terrain[row], terrain[row + 1]) <= 1){
+                int diffCount = 0;
+                int upper = row;
+                int lower = row + 1;
                 while(upper >= 0 && lower < terrain.size()){
+                    diffCount += checkDiffs(terrain[upper], terrain[lower]);
                     //cout << terrain[upper] << endl << terrain[lower] << endl << endl;
-                    if(terrain[upper] != terrain[lower]){
+                    if(diffCount > 1){
                         break;
                     }
-                    else if(upper == 0 || lower == terrain.size() - 1){
+                    else if((upper == 0 || lower == terrain.size() - 1) && diffCount == 1){
                         rowFound = true;
                         reflections.push_back({'r',row + 1});
                     }
@@ -81,8 +99,9 @@ int main(){
             }
         }
 
+        //No row reflection found, must be column reflection, do the same difference check
         if(!rowFound){
-            for(size_t col = 0; col < terrain[0].length() - 1; col++){
+            for(int col = 0; col < terrain[0].length() - 1; col++){
                 string leftCol = "";
                 string rightCol = "";
                 for(auto str : terrain){
@@ -90,9 +109,12 @@ int main(){
                     rightCol += str[col + 1];
                 }
                 //cout << "Cols:" << endl << leftCol << endl << rightCol << endl << endl;
-                if(leftCol == rightCol){
-                    size_t left = col;
-                    size_t right = col + 1;
+
+                //If possible column reflection start is found, check each side
+                if(checkDiffs(leftCol, rightCol) <= 1){
+                    int diffCount = 0;
+                    int left = col;
+                    int right = col + 1;
                     while(left >= 0 && right < terrain[0].size()){
                         leftCol = "";
                         rightCol = "";
@@ -100,11 +122,12 @@ int main(){
                             leftCol += str[left];
                             rightCol += str[right];
                         }
+                        diffCount += checkDiffs(leftCol, rightCol);
                         //cout << leftCol << endl << rightCol << endl << endl;
-                        if(leftCol != rightCol){
+                        if(diffCount > 1){
                             break;
                         }
-                        else if(left == 0 || right == terrain[0].size() - 1){
+                        else if((left == 0 || right == terrain[0].size() - 1) && diffCount == 1){
                             colFound = true;
                             reflections.push_back({'c',col + 1});
                             break;
