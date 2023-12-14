@@ -28,7 +28,7 @@ int main(){
 
     string line;
 
-    //Read in lines, add padding on either side
+    //Read in lines, add to terrains if end of map is reached
     vector<string> terrain;
     while(getline(file,line)){
 
