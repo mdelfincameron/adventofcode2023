@@ -25,9 +25,9 @@ int main(){
 
     long long total = 0;
     regex chars("[^,]+");
+    regex operations("[=-]");
 
-    vector<vector<pair<string, int>>> boxes;
-    boxes.resize(256);
+    vector<vector<pair<string, int>>> boxes(256);
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -41,58 +41,66 @@ int main(){
     }
 
     string line;
-
-    //Read in lines
-    while(getline(file,line)){
-        
-        vector<string> strs;
-        smatch m;
-
-        //Split string, comma delimiters, add to vector
-        while(regex_search(line, m, chars)){
-            strs.push_back(m.str());
-            line = line.substr(m.position() + m.length());
-        }
-
-        //Get hash of each string, add to total
-        for(auto str : strs){
-            string label = str.substr(0, 2);
-            int boxNum = getHash(label);
-            //cout << label << endl;
-            if(str[2] == '='){
-                int focalLength = str[3] - '0';
-                bool labelFound = false;
-                for(auto jt = boxes[boxNum].begin(); jt != boxes[boxNum].end(); jt++){
-                    if(jt->first == label){
-                        jt->second = focalLength;
-                        labelFound = true;
-                        break;
-                    }
-                }
-                if(!labelFound){
-                    boxes[boxNum].push_back({label, focalLength}); 
-                }          
-            }
-            else{
-                for(auto jt = boxes[boxNum].begin(); jt != boxes[boxNum].end(); jt++){
-                    if(jt->first == label){
-                        boxes[boxNum].erase(jt);
-                        break;
-                    }
-                }
-            }
-
-            //cout << str << endl;
-            
-        }
-    }
+    getline(file, line);
 
     file.close();
+
+    vector<string> strs;
+    smatch m;
+
+    //Split string, comma delimiters, add to vector
+    while(regex_search(line, m, chars)){
+        strs.push_back(m.str());
+        line = line.substr(m.position() + m.length());
+    }
+
+    //Iterate through strings and add to/remove from box
+    for(auto str : strs){
+
+        //Find labeland operation
+        regex_search(str, m, operations);
+        string label = str.substr(0, m.position());
+        string operation = m.str();
+
+        //Get box number by hashing label
+        int boxNum = getHash(label);
+        //cout << label << endl;
+
+        //Check if adding or removing label
+        if(operation == "="){
+            //Get focal length, if label already exists change focal length to new one, add to box if new label
+            int focalLength = stoi(str.substr(m.position() + m.length()));
+            bool labelFound = false;
+            for(auto jt = boxes[boxNum].begin(); jt != boxes[boxNum].end(); jt++){
+                if(jt->first == label){
+                    jt->second = focalLength;
+                    labelFound = true;
+                    break;
+                }
+            }
+            if(!labelFound){
+                boxes[boxNum].push_back({label, focalLength}); 
+            }          
+        }
+        else{
+            //Remove label from appropriate box if it exists
+            for(auto jt = boxes[boxNum].begin(); jt != boxes[boxNum].end(); jt++){
+                if(jt->first == label){
+                    boxes[boxNum].erase(jt);
+                    break;
+                }
+            }
+        }
+
+        //cout << str << endl;
+            
+    }
 
     for(int i = 0; i < boxes.size(); i++){
         for(int j = 0; j < boxes[i].size(); j++){
             //cout << boxes[i][j].first << endl;
-            //cout << i + 1 << ":" << j + 1 << ":" << boxes[i][j].second << endl; 
+            //cout << i + 1 << ":" << j + 1 << ":" << boxes[i][j].second << endl;
+            //Add box number * slot * focal length to total 
             total += (i + 1) * (j + 1) * boxes[i][j].second;
         }
     }

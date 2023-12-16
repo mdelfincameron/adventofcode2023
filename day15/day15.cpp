@@ -37,24 +37,23 @@ int main(){
     }
 
     string line;
+    getline(file, line);
 
-    //Read in lines
-    while(getline(file,line)){
-        
-        vector<string> strs;
-        smatch m;
+    file.close();
 
-        //Split string, comma delimiters, add to vector
-        while(regex_search(line, m, chars)){
-            strs.push_back(m.str());
-            line = line.substr(m.position() + m.length());
-        }
+    vector<string> strs;
+    smatch m;
 
-        //Get hash of each string, add to total
-        for(auto str : strs){
-            //cout << str << endl;
-            total += getHash(str);
-        }
+    //Split string, comma delimiters, add to vector
+    while(regex_search(line, m, chars)){
+        strs.push_back(m.str());
+        line = line.substr(m.position() + m.length());
+    }
+
+    //Get hash of each string, add to total
+    for(auto str : strs){
+        //cout << str << endl;
+        total += getHash(str);
     }
 
     file.close();
