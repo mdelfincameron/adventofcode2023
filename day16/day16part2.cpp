@@ -227,24 +227,54 @@ int main(){
         }
     }
 
+    //Bruteforce with pruning of redundant starts
+
     //Insert west/east edges into starts
     for(int y = 1; y < layout.size() - 1; y++){
-        starts.push_back({Position(0,y), north});
-        starts.push_back({Position(0,y), south});
+        char westCheck = layout[y][0];
+        char eastCheck = layout[y][layout[0].size() - 1];
+        if(westCheck != '.' && westCheck != '|'){
+            if(westCheck != '\\'){
+                starts.push_back({Position(0,y), north});
+            }
+            if(westCheck != '/'){
+                starts.push_back({Position(0,y), south});
+            }
+        }
         starts.push_back({Position(0,y), east});
-        starts.push_back({Position(layout[0].size() - 1,y), north});
-        starts.push_back({Position(layout[0].size() - 1,y), south});
+        if(eastCheck != '.' && eastCheck != '|'){
+            if(eastCheck != '/'){
+                starts.push_back({Position(layout[0].size() - 1,y), north});
+            }
+            if(eastCheck != '\\'){
+                starts.push_back({Position(layout[0].size() - 1,y), south});
+            }
+        }
         starts.push_back({Position(layout[0].size() - 1,y), west});
     }
 
     //Insert north/south edges into starts
     for(int x = 1; x < layout[0].size() - 1; x++){
+        char northCheck = layout[0][x];
+        char southCheck = layout[layout.size() - 1][x];
+        if(northCheck != '.' && northCheck != '-'){
+            if(northCheck != '\\'){
+                starts.push_back({Position(x,0), west});
+            }
+            if(northCheck != '/'){
+                starts.push_back({Position(x,0), east});
+            }
+        }
         starts.push_back({Position(x,0), south});
-        starts.push_back({Position(x,0), west});
-        starts.push_back({Position(x,0), east});
+        if(southCheck != '.' && southCheck != '-'){
+            if(southCheck != '/'){
+                starts.push_back({Position(x,layout.size() - 1), west});
+            }
+            if(southCheck != '\\'){
+                starts.push_back({Position(x,layout.size() - 1), east});
+            }
+        }
         starts.push_back({Position(x,layout.size() - 1), north});
-        starts.push_back({Position(x,layout.size() - 1), west});
-        starts.push_back({Position(x,layout.size() - 1), east});
     }
 
     //Insert northwest corner
@@ -262,7 +292,9 @@ int main(){
 
     for(auto start : starts){
         paths.push_back(start);
-        cout << "Testing " << start.first.x << "," << start.first.y << " going " << start.second << endl;
+        map<Position,Mirror> tempMirrors = mirrors;
+        map<Position,Splitter> tempSplitters = splitters;
+        //cout << "Testing " << start.first.x << "," << start.first.y << " going " << start.second << endl;
         //Trace paths, reflecting from mirrors and splitting from splitters as needed
         while(!paths.empty()){
             //cout << paths.size() << endl;
@@ -274,7 +306,7 @@ int main(){
             //cout << pos.y << "," << pos.x << " moving " << dir << endl;
             if(pathsPos == '/' || pathsPos == '\\'){
                 //Check if mirror exists, if visited from current direction end path, else reflect and continue
-                if(auto it = mirrors.find(pos); it != mirrors.end()){
+                if(auto it = tempMirrors.find(pos); it != mirrors.end()){
                     if(it->second.visited[dir]){
                         paths.erase(paths.begin());
                         continue;
@@ -287,7 +319,7 @@ int main(){
             }
             else if(pathsPos == '-' || pathsPos == '|'){
                 //Check if splitter exists, if visited from current direction end path, else split and continue
-                if(auto it = splitters.find(pos); it != splitters.end()){
+                if(auto it = tempSplitters.find(pos); it != splitters.end()){
                     if(it->second.visited[dir]){
                         paths.erase(paths.begin());
                         continue;
@@ -315,7 +347,7 @@ int main(){
             paths.front().first = pos;
             paths.front().second = dir;
         }
-        cout << "Total is " << visited.size() << endl;
+        //cout << "Total is " << visited.size() << endl;
         total = max(total,visited.size());
         resetLayout(visited, mirrors, splitters);
     }
