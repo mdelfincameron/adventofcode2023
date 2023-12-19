@@ -150,13 +150,12 @@ int main(){
         }
     }
 
-    sort(verts.begin(), verts.end());
-
-    /*
+    
     for(auto i : verts){
          cout << i.y << ":" << i.x << endl;
     }
 
+    /*
     int maxY = 0;
     int maxX = 0;
     for(auto d : dig){
