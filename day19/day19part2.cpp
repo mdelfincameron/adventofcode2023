@@ -9,31 +9,37 @@
 
 using namespace std;
 
-//Extracts individual x,m,a,s values from part
-int extractInt(string& str){
-    smatch m;
-    regex digits("\\d+");
-    regex_search(str,m,digits);
-    string res = m.str();
-    str = str.substr(m.position() + m.length());
-    return stoi(res);
-}
+const int MIN = 1;
+const int MAX = 4000;
 
-//Part class, only needs x,m,a,s values
-struct Part{
-    int x;
-    int m;
-    int a;
-    int s;
-    Part(int x, int m, int a, int s){
-        this->x = x;
-        this->m = m;
-        this->a = a;
-        this->s = s; 
+struct Range{
+    int min, max;
+    Range(){
+        min = MIN;
+        max = MAX;
+    }
+    Range(int min, int max){
+        this->min = min;
+        this->max = max;
     }
 };
 
-//Workflow class, has vectors of tests, corresponding destinations, the amount of both, and the next label if no tests are passed
+//Range of each part
+struct PartRange{
+    string label;
+    Range x;
+    Range m;
+    Range a;
+    Range s;
+    PartRange(string label, Range x, Range m, Range a, Range s){
+        this->label = label;
+        this->x = x;
+        this->m = m;
+        this->a = a;
+        this->s = s;
+    }
+};
+
 struct Workflow{
     vector<string> tests;
     vector<string> dests;
@@ -46,7 +52,7 @@ struct Workflow{
         this->testCount = tests.size();
     }
     //Check part against all tests, return appropriate next destination
-    string test(Part& p){
+    string test(PartRange& p){
         regex op("[<>]");
         smatch m;
         string res;
@@ -56,21 +62,31 @@ struct Workflow{
             char cat = tests[i][0];
             char op = tests[i][1];
             int value = stoi(tests[i].substr(2));
-            int partNum = 0;
-            bool passesTest = false;
+
+            Range * r;
+            PartRange passRange(p.label, p.x, p.m, p.a, p.s);
+            Range * pass;
+
+            int testMin = MIN;
+            int testMax = MAX;
+
             //Assign value to be checked based on what the test wants
             switch(cat){
                 case 'x':
-                    partNum = p.x;
+                    pass = &passRange.x;
+                    r = &p.x;
                     break;
                 case 'm':
-                    partNum = p.m;
+                    pass = &passRange.m;
+                    r = &p.m;
                     break;
                 case 'a':
-                    partNum = p.a;
+                    pass = &passRange.a;
+                    r = &p.a;
                     break;
                 case 's':
-                    partNum = p.s;
+                    pass = &passRange.s;
+                    r = &p.s;
                     break;
             }
 
@@ -78,10 +94,20 @@ struct Workflow{
 
             //Check if test is passed
             if(op == '<'){
-                passesTest = partNum < value;
+                testMax = value;
             }
             else{
-                passesTest = partNum > value;
+                testMin = value;
+            }
+
+            int lower = max(r->min, testMin);
+            int upper = min(r->max, testMax);
+            if(upper > lower){
+                pass->max = upper;
+                pass->min = lower;
+            }
+            else{
+
             }
 
             //Return appropriate destination if test is passed
@@ -99,13 +125,13 @@ int main(){
     fstream file;
     long long total = 0;
 
-    vector<Part> parts;
     map<string, Workflow> workflows;
     smatch m;
     smatch split;
     regex insns("\\{.*\\}");
     regex notComma("[^,]+");
     regex colon(":");
+    vector<PartRange> valid;
 
     //Get filename, open file
     cout << "Please input filename: ";
@@ -128,17 +154,14 @@ int main(){
         vector<string> tests;
         vector<string> dests;
         string next; 
-        //Extract tests and default next destination
         while(regex_search(noBraces,m,notComma)){
             string str = m.str();
-            //If string is a test
             if(regex_search(str,split,colon)){
                 string test = str.substr(0,split.position());
                 string dest = str.substr(split.position() + split.length());
                 tests.push_back(test);
                 dests.push_back(dest);
             }
-            //Not a test, string is the default destination
             else{
                 next = str;
             }
@@ -157,38 +180,44 @@ int main(){
     }
     */
 
-    //Read in parts
-    while(getline(file, line)){
-        //Extract integers from string, add to vector of parts
-        int x = extractInt(line);
-        int m = extractInt(line);
-        int a = extractInt(line);
-        int s = extractInt(line);
-        parts.push_back(Part(x,m,a,s));
+    file.close();
+
+    //Test all possible x,m,a,s values
+    vector<PartRange> ranges(1, PartRange("in",Range(),Range(),Range(),Range()));
+    for(auto i : ranges){
+        cout << i.label << endl;
+    }
+    while(!ranges.empty()){
+        auto range = ranges.begin();
+        while(range->label != "R" && range->label != "A"){
+            if(auto it = workflows.find(range->label); it != workflows.end()){
+                range->label = it->second.test(*range);
+            }
+        }
+        if(range->label == "A"){
+            total += (range->x.max - range->x.min) * (range->m.max - range->m.min) * 
+            (range->a.max - range->a.min) * (range->s.max - range->a.min);
+        }
+        ranges.erase(range);
     }
 
     /*
-    for(auto p : parts){
-        cout << p.x << " " << p.m << " " << p.a << " " << p.s << endl;
-    }
-    */
-
-    file.close();
-
-    //Check if each part passes or not
-    for(auto part : parts){
-        string cur = "in";
-        while(cur != "R" && cur != "A"){
-            if(auto it = workflows.find(cur); it != workflows.end()){
-                cur = it->second.test(part);
+    for(int i = 1; i <= 4000; i++){
+        vector<string> cur(4,"in");
+        vector<char> chars = {'x','m','a','s'};
+        cout << i << endl;
+        for(int j = 0; j < cur.size(); j++){
+            while(cur[j] != "R" && cur[j] != "A"){
+                if(auto it = workflows.find(cur[j]); it != workflows.end()){
+                    cur[j] = it->second.test(chars[j],i);
+                }
+            }
+            if(cur[j] == "A"){
+                totals[j]++;
             }
         }
-        //cout << "Part ended up at " << cur << endl;
-        //Add total of part values to final total
-        if(cur == "A"){
-            total += part.x + part.m + part.a + part.s;
-        }
     }
+    */
 
     auto end = chrono::steady_clock::now();
 
