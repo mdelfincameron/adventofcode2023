@@ -1,2 +1,2 @@
-Solutions to Advent of Code 2023 in C++, currrently finished up to day 15 part 2 
-TODO: Day 10 part 2, Day 12, Day 17-18, Day 19 part 2, Day 20
+Solutions to what I completed of Advent of Code 2023 in C++  
+DONE: All of Days 1-9, 11, 13-16, part 1 of Days 10 and 19. All other solutions are incomplete.
